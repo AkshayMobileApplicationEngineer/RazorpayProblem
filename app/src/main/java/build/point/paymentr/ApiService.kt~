@@ -14,5 +14,5 @@ interface ApiService {
         @Field("transaction_type") transactionType: String,
         @Field("transaction_status") transactionStatus: String,
         @Field("transaction_description") transactionDescription: String
-    ): Call<TransactionResponse>
+    ): Call<payapi>
 }

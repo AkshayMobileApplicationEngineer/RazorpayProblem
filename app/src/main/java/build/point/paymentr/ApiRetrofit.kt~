@@ -1,0 +1,4 @@
+package build.point.paymentr
+
+class ApiInterface {
+}
