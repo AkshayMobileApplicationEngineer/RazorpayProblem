@@ -11,58 +11,43 @@ import androidx.appcompat.app.AppCompatActivity
 import com.razorpay.Checkout
 import com.razorpay.PaymentResultListener
 import org.json.JSONObject
-import retrofit2.*
-import retrofit2.converter.gson.GsonConverterFactory
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 class MainActivity : AppCompatActivity(), PaymentResultListener {
 
     private lateinit var amount: EditText
-    private lateinit var paynow: Button
     private lateinit var buyNowButton: Button
+    private val userId = "6859" // Declare userId as a class-level variable
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
         amount = findViewById(R.id.amount)
-        paynow = findViewById(R.id.paynow)
         buyNowButton = findViewById(R.id.buyNowButton)
 
-        paynow.setOnClickListener {
-            val amountText = amount.text.toString()
-            if (amountText.isNotEmpty() && amountText.toDoubleOrNull() != null) {
-                startPayment(amountText)
-            } else {
-                Toast.makeText(this, "Please enter a valid amount", Toast.LENGTH_SHORT).show()
-            }
-        }
-
         buyNowButton.setOnClickListener {
-            val userId = "1234"
-            val transitionAmount = "1"
-            val transitionDescription = "test"
-            paymentStart(userId, transitionAmount, transitionDescription)
+            val transactionAmount = "1"
+            val transactionDescription = "test"
+            paymentStart(userId, transactionAmount, transactionDescription)
         }
     }
 
-    private fun startPayment(amountText: String) {
-        val userId = "1234" // Retrieve this dynamically in a real app
-        paymentStart(userId, amountText, "Payment for $amountText")
-    }
-
-    private fun paymentStart(userId: String, transitionAmount: String, transitionDescription: String) {
+    private fun paymentStart(userId: String, transactionAmount: String, transactionDescription: String) {
         val activity = this
         val co = Checkout()
         co.setKeyID("rzp_live_0e7KaXdVczrhK6")
 
         try {
             val options = JSONObject().apply {
-                put("name", "Razorpay Corp")
-                put("description", transitionDescription)
+                put("name", "Quick Payment")
+                put("description", transactionDescription)
                 put("image", "http://example.com/image/rzp.jpg")
                 put("theme.color", "#3399cc")
                 put("currency", "INR")
-                put("amount", (transitionAmount.toDouble() * 100).toInt())
+                put("amount", (transactionAmount.toDouble() * 100).toInt())
                 put("retry", JSONObject().apply {
                     put("enabled", true)
                     put("max_count", 4)
@@ -89,120 +74,62 @@ class MainActivity : AppCompatActivity(), PaymentResultListener {
         }
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == Checkout.RZP_REQUEST_CODE) {
-            when (resultCode) {
-                RESULT_OK -> {
-                    val response = data?.getStringExtra("response")
-                    handlePaymentSuccess(response)
-                }
-                RESULT_CANCELED -> {
-                    handlePaymentCancelled()
-                }
-                else -> {
-                    handlePaymentFailed()
-                }
-            }
-        }
+    override fun onPaymentSuccess(response: String?) {
+        Log.d("TAG", "onPaymentSuccess: $response")
+        Toast.makeText(this, "Payment Successful", Toast.LENGTH_SHORT).show()
+        handlePaymentSuccess(response)
+    }
+
+    override fun onPaymentError(code: Int, response: String?) {
+        Log.e("TAG", "PaymentError: $response")
+        Toast.makeText(this, "Payment Error: $response", Toast.LENGTH_SHORT).show()
+        handlePaymentFailed()
     }
 
     private fun handlePaymentSuccess(response: String?) {
-        val jsonResponse = JSONObject(response)
-        val razorpayOrderId = jsonResponse.getString("razorpay_order_id")
-        val razorpaySignature = jsonResponse.getString("razorpay_signature")
+        val jsonResponse = response?.let { JSONObject(it) }
+        val razorpayOrderId = jsonResponse?.getString("razorpay_order_id") ?: ""
+        val razorpaySignature = jsonResponse?.getString("razorpay_signature") ?: ""
 
-        // Log the transaction
         sendTransactionToApi(
-            userId = "1234", // Use the actual user ID
+            userId = userId,
             transactionAmount = amount.text.toString().toDouble(),
             transactionType = "ADD", // or "DEDUCT"
             transactionStatus = "COMPLETED",
             transactionDescription = "Money Added To Wallet"
         )
-        dialogPaymentSuccess()
-        Toast.makeText(this, "Payment Successful", Toast.LENGTH_SHORT).show()
-    }
-
-    private fun dialogPaymentSuccess() {
-        val builder = AlertDialog.Builder(this)
-        builder.setTitle("Payment Successful")
-        builder.setMessage("Your payment was successful.")
-        builder.setPositiveButton("OK") { dialog, _ ->
-            dialog.dismiss()
-        }
-        val dialog = builder.create()
-        dialog.show()
+        showDialog("Payment Successful", "Your payment was successful.")
     }
 
     private fun handlePaymentCancelled() {
-        val userId = "1234" // Use the actual user ID
-        val transactionAmount = amount.text.toString().toDouble()
-
-        // Log the transaction
+        Log.d("TAG", "handlePaymentCancelled")
+        Toast.makeText(this, "Payment Cancelled", Toast.LENGTH_SHORT).show()
         sendTransactionToApi(
             userId = userId,
-            transactionAmount = transactionAmount,
-            transactionType = "ADD", // or "DEDUCT"
+            transactionAmount = amount.text.toString().toDouble(),
+            transactionType = "ADD",
             transactionStatus = "PENDING",
             transactionDescription = "Payment Cancelled"
         )
-        paymentCaneclledDialog()
-        Toast.makeText(this, "Payment Cancelled", Toast.LENGTH_SHORT).show()
-    }
-
-    private fun paymentCaneclledDialog() {
-        //TODO("Not yet implemented")
-        val builder = AlertDialog.Builder(this)
-        builder.setTitle("Payment Cancelled")
-        builder.setMessage("Your payment was cancelled.")
-        builder.setPositiveButton("OK") { dialog, _ ->
-            dialog.dismiss()
-        }
-        val dialog = builder.create()
-        dialog.show()
+        showDialog("Payment Cancelled", "Your payment was cancelled.")
     }
 
     private fun handlePaymentFailed() {
-        val userId = "1234" // Use the actual user ID
-        val transactionAmount = amount.text.toString().toDouble()
-
-        // Log the transaction
+        Log.d("TAG", "handlePaymentFailed")
+        Toast.makeText(this, "Payment Failed", Toast.LENGTH_SHORT).show()
         sendTransactionToApi(
             userId = userId,
-            transactionAmount = transactionAmount,
-            transactionType = "ADD", // or "DEDUCT"
+            transactionAmount = amount.text.toString().toDouble(),
+            transactionType = "ADD",
             transactionStatus = "DECLINED",
             transactionDescription = "Payment Failed"
         )
-
-        Toast.makeText(this, "Payment Failed", Toast.LENGTH_SHORT).show()
-        val builder = AlertDialog.Builder(this)
-        builder.setTitle("Payment Failed")
-        builder.setMessage("Your payment could not be processed. Please try again.")
-        builder.setPositiveButton("OK") { dialog, _ ->
-            dialog.dismiss()
-        }
-        val dialog = builder.create()
-        dialog.show()
-    }
-
-    override fun onPaymentSuccess(p0: String?) {
-        handlePaymentSuccess(p0)
-    }
-
-    override fun onPaymentError(p0: Int, p1: String?) {
-        Toast.makeText(this, "Payment Error: $p1", Toast.LENGTH_SHORT).show()
-        handlePaymentFailed()
+        showDialog("Payment Failed", "Your payment could not be processed. Please try again.")
     }
 
     private fun sendTransactionToApi(userId: String, transactionAmount: Double, transactionType: String, transactionStatus: String, transactionDescription: String) {
-        val retrofit = Retrofit.Builder()
-            .baseUrl("http://merabihar.in/")
-            .addConverterFactory(GsonConverterFactory.create())
-            .build()
-
-        val apiService = retrofit.create(ApiService::class.java)
+        Log.d("TAG", "sendTransactionToApi: $userId, $transactionAmount, $transactionType, $transactionStatus, $transactionDescription")
+        val apiService = RetrofitInstance.apiService
 
         apiService.logTransaction(
             userId = userId.toInt(),
@@ -210,14 +137,13 @@ class MainActivity : AppCompatActivity(), PaymentResultListener {
             transactionType = transactionType,
             transactionStatus = transactionStatus,
             transactionDescription = transactionDescription
-        ).enqueue(object : Callback<payapi> {
-            override fun onResponse(call: Call<payapi>, response: Response<payapi>) {
+        ).enqueue(object : Callback<TransactionResponse> {
+            override fun onResponse(call: Call<TransactionResponse>, response: Response<TransactionResponse>) {
+                Log.d("TAG", "onResponse: ${response.body()}")
                 if (response.isSuccessful) {
                     val responseBody = response.body()
                     if (responseBody?.status == "1") {
                         Toast.makeText(this@MainActivity, "Transaction logged successfully", Toast.LENGTH_SHORT).show()
-                        Log.d("TAG", "Transaction logged successfully")
-                        transactionloggedsuccessfully()
                     } else {
                         Toast.makeText(this@MainActivity, "Failed to log transaction: ${responseBody?.msg}", Toast.LENGTH_SHORT).show()
                     }
@@ -226,17 +152,18 @@ class MainActivity : AppCompatActivity(), PaymentResultListener {
                 }
             }
 
-            override fun onFailure(call: Call<payapi>, t: Throwable) {
+            override fun onFailure(call: Call<TransactionResponse>, t: Throwable) {
+                Log.e("TAG", "onFailure: ${t.message}")
                 Toast.makeText(this@MainActivity, "Error: ${t.message}", Toast.LENGTH_SHORT).show()
             }
         })
     }
 
-    private fun transactionloggedsuccessfully() {
-        //TODO("Not yet implemented")
+    private fun showDialog(title: String, message: String) {
+        Log.d("TAG", "showDialog: $title, $message")
         val builder = AlertDialog.Builder(this)
-        builder.setTitle("Transaction Logged Successfully")
-        builder.setMessage("Your transaction was logged successfully.")
+        builder.setTitle(title)
+        builder.setMessage(message)
         builder.setPositiveButton("OK") { dialog, _ ->
             dialog.dismiss()
         }
