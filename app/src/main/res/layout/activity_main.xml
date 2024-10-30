@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:background="@color/white"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity">
+
+    <EditText
+        android:id="@+id/amount"
+        android:layout_width="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_height="wrap_content"
+        android:hint="Enter Amount" />
+
+    <Button
+        android:id="@+id/paynow"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/amount"
+        android:layout_centerHorizontal="true"
+        android:text="Pay Now" />
+    <LinearLayout
+        android:layout_marginTop="20dp"
+        android:layout_below="@id/paynow"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp"
+        android:background="#FFFFFF">
+
+        <!-- Product Image -->
+        <ImageView
+            android:id="@+id/productImage"
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:scaleType="centerCrop"
+            android:background="@drawable/rzp_logo"
+            android:contentDescription="Product Image"
+            android:layout_marginBottom="8dp"
+            android:clipToOutline="true"
+            android:elevation="4dp"/>
+
+        <!-- Product Name -->
+        <TextView
+            android:id="@+id/productName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Product Name"
+            android:textColor="#000000"
+            android:textSize="20sp"
+            android:fontFamily="sans-serif-medium"
+            android:paddingTop="8dp"
+            android:paddingBottom="4dp"/>
+
+        <!-- Product Description -->
+        <TextView
+            android:id="@+id/productDescription"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Short description of the product goes here."
+            android:textColor="#7D7D7D"
+            android:textSize="14sp"
+            android:paddingBottom="8dp"/>
+
+        <!-- Price -->
+        <TextView
+            android:id="@+id/productPrice"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="$199.99"
+            android:textColor="#FF6F00"
+            android:textSize="18sp"
+            android:fontFamily="sans-serif-medium"
+            android:paddingTop="8dp"/>
+
+        <!-- Stock Status -->
+        <TextView
+            android:id="@+id/stockStatus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="In Stock"
+            android:textColor="#388E3C"
+            android:textSize="14sp"
+            android:paddingTop="4dp"/>
+
+        <!-- Buy Now Button -->
+        <Button
+            android:id="@+id/buyNowButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Buy Now"
+            android:textColor="#FFFFFF"
+            android:textSize="16sp"
+            android:fontFamily="sans-serif-medium"
+            android:backgroundTint="#FF5722"
+            android:paddingVertical="12dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="8dp"
+            android:elevation="4dp"/>
+
+    </LinearLayout>
+
+</RelativeLayout>
