@@ -38,7 +38,7 @@ class MainActivity : AppCompatActivity(), PaymentResultListener {
     private fun paymentStart(userId: String, transactionAmount: String, transactionDescription: String) {
         val activity = this
         val co = Checkout()
-        co.setKeyID("rzp_live_0e7KaXdVczrhK6")
+        co.setKeyID("rzp_test_EOPjvkUZv890SI")
 
         try {
             val options = JSONObject().apply {

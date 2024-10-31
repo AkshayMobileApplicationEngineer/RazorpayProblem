@@ -22,9 +22,9 @@
 
 
 
-        <meta-data
-            android:name="com.razorpay.ApiKey"
-            android:value="rzp_live_0e7KaXdVczrhK6" />
+<!--        <meta-data-->
+<!--            android:name="com.razorpay.ApiKey"-->
+<!--            android:value="rzp_live_0e7KaXdVczrhK6" />-->
 
         <activity
             android:name=".MainActivity"
